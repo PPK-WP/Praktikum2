@@ -1,93 +1,96 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
-
+import { query } from "@/lib/db";
 import type { StoredUser } from "@/types/auth";
 import type { UserPreference } from "@/types/shared";
 
-// Lightweight JSON storage until the team picks a database (see PROJEK_WORKFLOW §30).
+// Data access for the users and user_preferences tables (db/migrations/001_init.sql).
 
 export interface StoredPreference extends UserPreference {
   userId: string;
   updatedAt: string;
 }
 
-interface AuthDatabase {
-  users: StoredUser[];
-  userPreferences: StoredPreference[];
+interface UserRow {
+  id: string;
+  name: string;
+  email: string;
+  password_hash: string;
+  created_at: Date;
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(process.cwd(), "data", "auth.json");
-const TEMP_FILE = path.join(process.cwd(), "data", "auth.json.tmp");
-
-let writeQueue: Promise<unknown> = Promise.resolve();
-
-async function readDatabase(): Promise<AuthDatabase> {
-  try {
-    const raw = await readFile(DATA_FILE, "utf8");
-    const parsed = JSON.parse(raw) as Partial<AuthDatabase>;
-    return { users: parsed.users ?? [], userPreferences: parsed.userPreferences ?? [] };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { users: [], userPreferences: [] };
-    }
-    throw error;
-  }
+interface PreferenceRow {
+  user_id: string;
+  theme: UserPreference["theme"];
+  default_filter: UserPreference["defaultFilter"];
+  updated_at: Date;
 }
 
-async function writeDatabase(database: AuthDatabase) {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(TEMP_FILE, JSON.stringify(database, null, 2));
-  await rename(TEMP_FILE, DATA_FILE);
+const USER_COLUMNS = "id, name, email, password_hash, created_at";
+const PREFERENCE_COLUMNS = "user_id, theme, default_filter, updated_at";
+
+function toStoredUser(row: UserRow): StoredUser {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role: "student",
+    passwordHash: row.password_hash,
+    createdAt: row.created_at.toISOString(),
+  };
 }
 
-/** Runs read-modify-write updates one at a time so concurrent requests do not overwrite each other. */
-function mutate<T>(update: (database: AuthDatabase) => T | Promise<T>): Promise<T> {
-  const run = writeQueue.then(async () => {
-    const database = await readDatabase();
-    const result = await update(database);
-    await writeDatabase(database);
-    return result;
-  });
-  writeQueue = run.catch(() => undefined);
-  return run;
+function toStoredPreference(row: PreferenceRow): StoredPreference {
+  return {
+    userId: row.user_id,
+    theme: row.theme,
+    defaultFilter: row.default_filter,
+    updatedAt: row.updated_at.toISOString(),
+  };
 }
 
 export async function findUserByEmail(email: string) {
-  const { users } = await readDatabase();
-  return users.find((user) => user.email === email) ?? null;
+  const [row] = await query<UserRow>(`SELECT ${USER_COLUMNS} FROM users WHERE email = $1`, [email]);
+  return row ? toStoredUser(row) : null;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function findUserById(id: string) {
-  const { users } = await readDatabase();
-  return users.find((user) => user.id === id) ?? null;
+  // A non-UUID id (e.g. from an old cookie) would make PostgreSQL raise an error, so skip the query.
+  if (!UUID_PATTERN.test(id)) {
+    return null;
+  }
+  const [row] = await query<UserRow>(`SELECT ${USER_COLUMNS} FROM users WHERE id = $1`, [id]);
+  return row ? toStoredUser(row) : null;
 }
 
 /** Returns null when the email is already registered. */
-export function insertUser(user: StoredUser) {
-  return mutate((database) => {
-    if (database.users.some((existing) => existing.email === user.email)) {
-      return null;
-    }
-    database.users.push(user);
-    return user;
-  });
+export async function insertUser(user: Omit<StoredUser, "id" | "createdAt" | "role">) {
+  const [row] = await query<UserRow>(
+    `INSERT INTO users (name, email, password_hash)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (email) DO NOTHING
+     RETURNING ${USER_COLUMNS}`,
+    [user.name, user.email, user.passwordHash],
+  );
+  return row ? toStoredUser(row) : null;
 }
 
 export async function findPreferenceByUserId(userId: string) {
-  const { userPreferences } = await readDatabase();
-  return userPreferences.find((preference) => preference.userId === userId) ?? null;
+  const [row] = await query<PreferenceRow>(
+    `SELECT ${PREFERENCE_COLUMNS} FROM user_preferences WHERE user_id = $1`,
+    [userId],
+  );
+  return row ? toStoredPreference(row) : null;
 }
 
-export function upsertPreference(userId: string, preference: UserPreference) {
-  return mutate((database) => {
-    const record: StoredPreference = { ...preference, userId, updatedAt: new Date().toISOString() };
-    const index = database.userPreferences.findIndex((item) => item.userId === userId);
-    if (index === -1) {
-      database.userPreferences.push(record);
-    } else {
-      database.userPreferences[index] = record;
-    }
-    return record;
-  });
+export async function upsertPreference(userId: string, preference: UserPreference) {
+  const [row] = await query<PreferenceRow>(
+    `INSERT INTO user_preferences (user_id, theme, default_filter)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id)
+     DO UPDATE SET theme = EXCLUDED.theme, default_filter = EXCLUDED.default_filter, updated_at = now()
+     RETURNING ${PREFERENCE_COLUMNS}`,
+    [userId, preference.theme, preference.defaultFilter],
+  );
+  return toStoredPreference(row);
 }

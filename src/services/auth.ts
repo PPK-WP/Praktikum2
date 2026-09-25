@@ -20,12 +20,9 @@ export async function register(payload: RegisterPayload): Promise<AuthResult> {
   }
 
   const user = await insertUser({
-    id: crypto.randomUUID(),
     name: payload.name.trim(),
     email: normalizeEmail(payload.email),
-    role: "student",
     passwordHash: await hashPassword(payload.password),
-    createdAt: new Date().toISOString(),
   });
 
   if (!user) {
