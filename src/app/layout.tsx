@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
 import { UserProvider } from "@/features/auth/UserProvider";
+import { ThemeToggle } from "@/features/preferences/ThemeToggle";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getPreference } from "@/services/preferences";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,12 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
+  const [user, preference] = await Promise.all([getCurrentUser(), getPreference()]);
 
   return (
-    <html lang="id">
+    <html lang="id" data-theme={preference.theme}>
       <body>
         <UserProvider user={user}>{children}</UserProvider>
+        <ThemeToggle initialTheme={preference.theme} />
       </body>
     </html>
   );

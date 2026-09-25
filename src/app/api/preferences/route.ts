@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 
+import { parsePreferencePatch } from "@/features/preferences/preference";
+import { jsonError, readJson } from "@/lib/auth/http";
+import { getPreference, savePreference } from "@/services/preferences";
+
 export async function GET() {
-  return NextResponse.json({
-    data: {
-      theme: "light",
-      defaultFilter: "all",
-    },
-  });
+  return NextResponse.json({ preference: await getPreference() });
 }
 
 export async function PATCH(request: Request) {
-  const body = await request.json();
+  const patch = parsePreferencePatch(await readJson(request));
+  if (!patch) {
+    return jsonError(422, "Preferensi tidak valid.", {
+      theme: "Gunakan light atau dark.",
+      defaultFilter: "Gunakan all, income, atau expense.",
+    });
+  }
 
-  return NextResponse.json({
-    data: {
-      theme: body.theme ?? "light",
-      defaultFilter: body.defaultFilter ?? "all",
-    },
-  });
+  return NextResponse.json({ preference: await savePreference(patch) });
 }

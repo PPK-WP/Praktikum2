@@ -4,6 +4,7 @@ import { jsonError, readJson } from "@/lib/auth/http";
 import { createSession } from "@/lib/auth/session";
 import { readStringFields } from "@/lib/auth/validation";
 import { login } from "@/services/auth";
+import { restorePreference } from "@/services/preferences";
 
 export async function POST(request: Request) {
   const body = await readJson(request);
@@ -17,5 +18,6 @@ export async function POST(request: Request) {
   }
 
   const session = await createSession(result.user.id);
+  await restorePreference(result.user.id);
   return NextResponse.json({ user: result.user, session }, { status: 200 });
 }
