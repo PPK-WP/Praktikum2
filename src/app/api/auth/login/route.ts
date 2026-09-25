@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  const body = await request.json();
+import { jsonError, readJson } from "@/lib/auth/http";
+import { createSession } from "@/lib/auth/session";
+import { readStringFields } from "@/lib/auth/validation";
+import { login } from "@/services/auth";
 
-  if (body.email === "mahasiswa@expense.test" && body.password === "password123") {
-    return NextResponse.json(
-      {
-        user: {
-          id: "user-001",
-          name: "Mahasiswa",
-          email: body.email,
-          role: "student",
-        },
-      },
-      { status: 200 },
-    );
+export async function POST(request: Request) {
+  const body = await readJson(request);
+  if (body === null) {
+    return jsonError(400, "Body harus berupa JSON.");
   }
 
-  return NextResponse.json({ message: "Email atau password salah" }, { status: 401 });
+  const result = await login(readStringFields(body, ["email", "password"] as const));
+  if (!result.ok) {
+    return jsonError(result.status, result.message, result.errors);
+  }
+
+  const session = await createSession(result.user.id);
+  return NextResponse.json({ user: result.user, session }, { status: 200 });
 }
