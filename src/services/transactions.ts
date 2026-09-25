@@ -1,122 +1,111 @@
-import { query } from "@/lib/db";
+import prisma from "@/lib/prisma";
 import type { DashboardSummary } from "@/types/dashboard";
 import type { Transaction, TransactionInput, TransactionType } from "@/types/transaction";
 
 export async function getTransactions(userId: string, filter?: TransactionType): Promise<Transaction[]> {
-  let sql = `
-    SELECT 
-      id, 
-      user_id AS "userId", 
-      type, 
-      amount::numeric, 
-      description, 
-      TO_CHAR(date, 'YYYY-MM-DD') AS date, 
-      created_at AS "createdAt", 
-      updated_at AS "updatedAt"
-    FROM transactions 
-    WHERE user_id = $1
-  `;
-  const params: unknown[] = [userId];
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      ...(filter ? { type: filter as any } : {}),
+    },
+    orderBy: [
+      { date: 'desc' },
+      { createdAt: 'desc' },
+    ],
+  });
 
-  if (filter) {
-    sql += ` AND type = $2`;
-    params.push(filter);
-  }
-
-  sql += ` ORDER BY date DESC, created_at DESC`;
-
-  const rows = await query<any>(sql, params);
-  return rows.map((row) => ({
-    ...row,
-    amount: Number(row.amount),
-    createdAt: row.createdAt?.toISOString(),
-    updatedAt: row.updatedAt?.toISOString(),
+  return transactions.map((t) => ({
+    id: t.id,
+    userId: t.userId,
+    type: t.type as TransactionType,
+    amount: Number(t.amount),
+    description: t.description,
+    date: t.date.toISOString().split('T')[0],
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt?.toISOString(),
   }));
 }
 
 export async function getTransaction(userId: string, id: string): Promise<Transaction> {
-  const rows = await query<any>(
-    `SELECT 
-      id, 
-      user_id AS "userId", 
-      type, 
-      amount::numeric, 
-      description, 
-      TO_CHAR(date, 'YYYY-MM-DD') AS date, 
-      created_at AS "createdAt", 
-      updated_at AS "updatedAt"
-    FROM transactions 
-    WHERE id = $1 AND user_id = $2`,
-    [id, userId]
-  );
-  if (rows.length === 0) throw new Error("Transaction not found");
-  
+  const t = await prisma.transaction.findFirst({
+    where: { id, userId }
+  });
+
+  if (!t) throw new Error("Transaction not found");
+
   return {
-    ...rows[0],
-    amount: Number(rows[0].amount),
-    createdAt: rows[0].createdAt?.toISOString(),
-    updatedAt: rows[0].updatedAt?.toISOString(),
+    id: t.id,
+    userId: t.userId,
+    type: t.type as TransactionType,
+    amount: Number(t.amount),
+    description: t.description,
+    date: t.date.toISOString().split('T')[0],
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt?.toISOString(),
   };
 }
 
 export async function createTransaction(userId: string, input: TransactionInput): Promise<Transaction> {
-  const rows = await query<any>(
-    `INSERT INTO transactions (user_id, type, amount, description, date)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING 
-      id, 
-      user_id AS "userId", 
-      type, 
-      amount::numeric, 
-      description, 
-      TO_CHAR(date, 'YYYY-MM-DD') AS date, 
-      created_at AS "createdAt", 
-      updated_at AS "updatedAt"`,
-    [userId, input.type, input.amount, input.description, input.date]
-  );
-  
+  const t = await prisma.transaction.create({
+    data: {
+      userId,
+      type: input.type as any,
+      amount: input.amount,
+      description: input.description,
+      date: new Date(input.date),
+    }
+  });
+
   return {
-    ...rows[0],
-    amount: Number(rows[0].amount),
-    createdAt: rows[0].createdAt?.toISOString(),
-    updatedAt: rows[0].updatedAt?.toISOString(),
+    id: t.id,
+    userId: t.userId,
+    type: t.type as TransactionType,
+    amount: Number(t.amount),
+    description: t.description,
+    date: t.date.toISOString().split('T')[0],
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt?.toISOString(),
   };
 }
 
 export async function updateTransaction(userId: string, id: string, input: TransactionInput): Promise<Transaction> {
-  const rows = await query<any>(
-    `UPDATE transactions 
-     SET type = $1, amount = $2, description = $3, date = $4, updated_at = now()
-     WHERE id = $5 AND user_id = $6
-     RETURNING 
-      id, 
-      user_id AS "userId", 
-      type, 
-      amount::numeric, 
-      description, 
-      TO_CHAR(date, 'YYYY-MM-DD') AS date, 
-      created_at AS "createdAt", 
-      updated_at AS "updatedAt"`,
-    [input.type, input.amount, input.description, input.date, id, userId]
-  );
-  
-  if (rows.length === 0) throw new Error("Transaction not found");
-  
+  const existing = await prisma.transaction.findFirst({
+    where: { id, userId }
+  });
+  if (!existing) throw new Error("Transaction not found");
+
+  const t = await prisma.transaction.update({
+    where: { id },
+    data: {
+      type: input.type as any,
+      amount: input.amount,
+      description: input.description,
+      date: new Date(input.date),
+    }
+  });
+
   return {
-    ...rows[0],
-    amount: Number(rows[0].amount),
-    createdAt: rows[0].createdAt?.toISOString(),
-    updatedAt: rows[0].updatedAt?.toISOString(),
+    id: t.id,
+    userId: t.userId,
+    type: t.type as TransactionType,
+    amount: Number(t.amount),
+    description: t.description,
+    date: t.date.toISOString().split('T')[0],
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt?.toISOString(),
   };
 }
 
 export async function deleteTransaction(userId: string, id: string): Promise<boolean> {
-  const rows = await query<{ id: string }>(
-    `DELETE FROM transactions WHERE id = $1 AND user_id = $2 RETURNING id`,
-    [id, userId]
-  );
+  const existing = await prisma.transaction.findFirst({
+    where: { id, userId }
+  });
+  if (!existing) throw new Error("Transaction not found");
+
+  await prisma.transaction.delete({
+    where: { id }
+  });
   
-  if (rows.length === 0) throw new Error("Transaction not found");
   return true;
 }
 

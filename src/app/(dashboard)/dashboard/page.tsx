@@ -1,27 +1,18 @@
 import { LogoutButton } from "@/features/auth/LogoutButton";
 import { formatCurrency } from "@/lib/utils";
+import { requireUser } from "@/lib/auth/session";
+import { getDashboardSummary } from "@/services/transactions";
 
-const summary = {
-  name: "Mahasiswa",
-  balance: 1550000,
-  totalIncome: 2300000,
-  totalExpense: 750000,
-};
+export default async function DashboardPage() {
+  const user = await requireUser();
+  const summary = await getDashboardSummary(user.id);
 
-const recentTransactions = [
-  { id: "trx-004", type: "income", description: "Uang tugas tambahan", amount: 300000, date: "2026-09-24" },
-  { id: "trx-003", type: "expense", description: "Beli buku", amount: 750000, date: "2026-09-22" },
-  { id: "trx-002", type: "expense", description: "Makan siang", amount: 450000, date: "2026-09-21" },
-  { id: "trx-001", type: "income", description: "Gaji part-time", amount: 2000000, date: "2026-09-20" },
-];
-
-export default function DashboardPage() {
   return (
     <main className="dashboard-shell">
       <header className="topbar">
         <div>
           <p className="eyebrow">Selamat datang</p>
-          <h1>{summary.name}</h1>
+          <h1>{user.name}</h1>
         </div>
         <LogoutButton />
       </header>
@@ -44,11 +35,16 @@ export default function DashboardPage() {
       <section className="panel list-panel">
         <div className="section-head">
           <h2>Transaksi terbaru</h2>
-          <a href="/transactions" className="ghost-button">Manage Transactions</a>
+          <a href="/transactions" className="ghost-button">Lihat semua</a>
         </div>
 
         <ul className="transaction-list">
-          {recentTransactions.map((transaction) => (
+          {summary.recentTransactions.length === 0 && (
+            <li className="transaction-item">
+              <span style={{ color: "var(--muted)" }}>Belum ada transaksi.</span>
+            </li>
+          )}
+          {summary.recentTransactions.map((transaction) => (
             <li key={transaction.id} className="transaction-item">
               <div>
                 <strong>{transaction.description}</strong>
