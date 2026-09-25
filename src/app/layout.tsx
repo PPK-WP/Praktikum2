@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+
+import { UserProvider } from "@/features/auth/UserProvider";
+import { getCurrentUser } from "@/lib/auth/session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -6,10 +9,14 @@ export const metadata: Metadata = {
   description: "Expense Tracker foundation for mahasiswa personal finance management.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body>
+        <UserProvider user={user}>{children}</UserProvider>
+      </body>
     </html>
   );
 }
