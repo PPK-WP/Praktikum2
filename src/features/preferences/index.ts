@@ -1,4 +1,6 @@
-export const preferencesFeature = {
-  name: "preferences",
-  status: "ready-for-implementation",
-};
+export {
+  DEFAULT_PREFERENCE,
+  parsePreference,
+  PREFERENCE_COOKIE,
+} from "@/features/preferences/preference";
+export { ThemeToggle } from "@/features/preferences/ThemeToggle";

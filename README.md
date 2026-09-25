@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Expense Tracker
 
-## Getting Started
+Aplikasi pencatat pemasukan dan pengeluaran untuk mahasiswa. Dibangun dengan Next.js 16 dan PostgreSQL.
 
-First, run the development server:
+## Menjalankan
+
+Cara tercepat (butuh Docker Desktop):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env    # PowerShell: Copy-Item .env.example .env
+# isi AUTH_SECRET di .env
+docker compose up -d --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Lalu buka http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Untuk `npm run dev` atau setup Windows tanpa Docker, lihat [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Perintah
 
-## Learn More
+| Perintah | Fungsi |
+| --- | --- |
+| `npm run dev` | Server development |
+| `npm run db:migrate` | Membuat / memperbarui tabel database |
+| `npm run build` lalu `npm start` | Server production |
+| `npm run lint` | Cek kode |
 
-To learn more about Next.js, take a look at the following resources:
+## Dokumen
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [docs/PROJEK_WORKFLOW.md](docs/PROJEK_WORKFLOW.md): SRS dan alur kerja tim
+- [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md): setup PostgreSQL (Docker dan Windows)
+- [docs/AUTH_CONTRACT.md](docs/AUTH_CONTRACT.md): cara memakai login, session, dan preferensi

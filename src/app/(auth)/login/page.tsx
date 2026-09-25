@@ -1,22 +1,26 @@
 import Link from "next/link";
 
-export default function LoginPage() {
+import { LoginForm } from "@/features/auth/LoginForm";
+import { redirectIfLoggedIn } from "@/features/auth/redirect-if-logged-in";
+import { AFTER_LOGIN_PATH } from "@/lib/auth/constants";
+import { safeRedirectPath } from "@/lib/auth/http";
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  await redirectIfLoggedIn();
+
+  const { next } = await searchParams;
+  const redirectTo = safeRedirectPath(typeof next === "string" ? next : null, AFTER_LOGIN_PATH);
+
   return (
     <main className="auth-shell">
       <section className="panel auth-panel">
         <p className="eyebrow">Expense Tracker</p>
         <h1>Masuk ke akun</h1>
-        <form className="auth-form">
-          <label>
-            Email
-            <input type="email" defaultValue="mahasiswa@expense.test" />
-          </label>
-          <label>
-            Password
-            <input type="password" defaultValue="password123" />
-          </label>
-          <button type="submit">Login</button>
-        </form>
+        <LoginForm redirectTo={redirectTo} />
         <p className="subtle">
           Belum punya akun? <Link href="/register">Daftar</Link>
         </p>

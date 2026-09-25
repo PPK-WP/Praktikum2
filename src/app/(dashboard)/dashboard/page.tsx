@@ -1,3 +1,4 @@
+import { LogoutButton } from "@/features/auth/LogoutButton";
 import { formatCurrency } from "@/lib/utils";
 
 const summary = {
@@ -22,7 +23,7 @@ export default function DashboardPage() {
           <p className="eyebrow">Selamat datang</p>
           <h1>{summary.name}</h1>
         </div>
-        <button className="ghost-button">Logout</button>
+        <LogoutButton />
       </header>
 
       <section className="summary-grid">
