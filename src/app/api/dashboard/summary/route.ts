@@ -12,8 +12,7 @@ export async function GET() {
   try {
     const summary = await getDashboardSummary(userId);
     return NextResponse.json({ data: summary });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
