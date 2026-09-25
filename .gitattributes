@@ -1,0 +1,5 @@
+# Keep LF line endings on Windows too, so Docker and shell scripts behave the same everywhere.
+* text=auto eol=lf
+*.ico binary
+*.png binary
+*.svg text eol=lf

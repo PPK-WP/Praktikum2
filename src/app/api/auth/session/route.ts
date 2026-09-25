@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { jsonError } from "@/lib/auth/http";
+import { getSession } from "@/services/auth";
+
 export async function GET() {
-  return NextResponse.json(
-    {
-      user: {
-        id: "user-001",
-        name: "Mahasiswa",
-        email: "mahasiswa@expense.test",
-        role: "student",
-      },
-    },
-    { status: 200 },
-  );
+  const session = await getSession();
+  if (!session.user) {
+    return jsonError(401, "Belum login atau session sudah berakhir.");
+  }
+
+  return NextResponse.json({ user: session.user }, { status: 200 });
 }

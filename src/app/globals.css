@@ -9,6 +9,29 @@
   --muted: #6b7280;
   --border: #e5e7eb;
   --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  --page-top: #edf4ff;
+  --page-bottom: #f8fafc;
+  --surface: #ffffff;
+  --input-bg: #f9fafb;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1120;
+  --panel: #111827;
+  --primary: #60a5fa;
+  --primary-strong: #3b82f6;
+  --success: #4ade80;
+  --danger: #f87171;
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --border: #1f2937;
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+  --page-top: #0b1120;
+  --page-bottom: #111827;
+  --surface: #1f2937;
+  --input-bg: #0f172a;
+  color-scheme: dark;
 }
 
 * {
@@ -24,7 +47,7 @@ html {
 body {
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(180deg, #edf4ff 0%, #f8fafc 100%);
+  background: linear-gradient(180deg, var(--page-top) 0%, var(--page-bottom) 100%);
   color: var(--text);
 }
 
@@ -112,7 +135,7 @@ input {
 
 .secondary-button,
 .ghost-button {
-  background: white;
+  background: var(--surface);
   border-color: var(--border);
   color: var(--text);
 }
@@ -169,7 +192,8 @@ input {
   border-radius: 10px;
   min-height: 46px;
   padding: 0 14px;
-  background: #f9fafb;
+  background: var(--input-bg);
+  color: var(--text);
 }
 
 .subtle {
@@ -265,4 +289,49 @@ input {
 .transaction-item .expense {
   color: var(--danger);
   font-weight: 700;
+}
+
+.auth-form input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.auth-form button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.field-error,
+.field-hint {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.field-error {
+  color: var(--danger);
+}
+
+.field-hint {
+  color: var(--muted);
+}
+
+.form-alert {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.theme-toggle {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  cursor: pointer;
 }
