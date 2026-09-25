@@ -6,6 +6,7 @@ import type { DashboardSummary } from "@/types/dashboard";
 import type { UserPreference } from "@/types/shared";
 import type { User } from "@/types/auth";
 import { TransactionManager } from "@/components/transaction/TransactionManager";
+import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 
 interface DashboardViewProps {
   user: User;
@@ -35,15 +36,24 @@ export function DashboardView({
     <>
       <section className="summary-grid">
         <article className="panel stat-card success">
-          <span>Total Pemasukan</span>
+          <div className="stat-header">
+            <span>Total Pemasukan</span>
+            <TrendingUp size={24} className="stat-icon" />
+          </div>
           <strong>{formatCurrency(summary.totalIncome)}</strong>
         </article>
         <article className="panel stat-card danger">
-          <span>Total Pengeluaran</span>
+          <div className="stat-header">
+            <span>Total Pengeluaran</span>
+            <TrendingDown size={24} className="stat-icon" />
+          </div>
           <strong>{formatCurrency(summary.totalExpense)}</strong>
         </article>
         <article className="panel stat-card primary">
-          <span>Saldo Keuangan</span>
+          <div className="stat-header">
+            <span>Saldo Keuangan</span>
+            <Wallet size={24} className="stat-icon" />
+          </div>
           <strong>{formatCurrency(summary.balance)}</strong>
         </article>
       </section>

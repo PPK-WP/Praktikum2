@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatCurrency } from "@/lib/utils";
 import type { Transaction, TransactionType, TransactionInput } from "@/types/transaction";
+import { TransactionChart } from "./TransactionChart";
 
 interface TransactionManagerProps {
   initialFilter?: TransactionType | "";
@@ -316,6 +317,10 @@ export function TransactionManager({
             </button>
           </div>
         </form>
+      )}
+
+      {!loading && transactions.length > 0 && (
+        <TransactionChart transactions={transactions} />
       )}
 
       {loading ? (
