@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@prisma/client": "^7.10.0",
@@ -23,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
+    "prisma": "^8.0.0-rc.17",
     "typescript": "^5"
   }
 }

@@ -1,6 +1,6 @@
 # Expense Tracker
 
-Aplikasi pencatat pemasukan dan pengeluaran untuk mahasiswa. Dibangun dengan Next.js 16 dan Prisma ORM (PostgreSQL).
+Aplikasi pencatat pemasukan dan pengeluaran untuk mahasiswa. Dibangun dengan Next.js 16 dan PostgreSQL.
 
 ## Menjalankan
 
@@ -21,7 +21,7 @@ Untuk `npm run dev` atau setup Windows tanpa Docker, lihat [docs/DATABASE_SETUP.
 | Perintah | Fungsi |
 | --- | --- |
 | `npm run dev` | Server development |
-| `npm run db:migrate` | Membuat / memperbarui schema database dengan Prisma (`prisma migrate dev`) |
+| `npm run db:migrate` | Membuat / memperbarui tabel database |
 | `npm run build` lalu `npm start` | Server production |
 | `npm run lint` | Cek kode |
 
