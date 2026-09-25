@@ -1,7 +1,7 @@
 import type { DashboardSummary } from "@/types/dashboard";
-import type { Transaction, TransactionType } from "@/types/transaction";
+import type { Transaction, TransactionInput, TransactionType } from "@/types/transaction";
 
-const mockTransactions: Transaction[] = [
+let mockTransactions: Transaction[] = [
   {
     id: "trx-001",
     userId: "user-001",
@@ -40,16 +40,56 @@ const mockTransactions: Transaction[] = [
   },
 ];
 
-export async function getTransactions(filter?: TransactionType) {
-  if (!filter) {
-    return mockTransactions;
+export async function getTransactions(userId: string, filter?: TransactionType) {
+  let filtered = mockTransactions.filter((t) => t.userId === userId);
+  
+  if (filter) {
+    filtered = filtered.filter((t) => t.type === filter);
   }
 
-  return mockTransactions.filter((transaction) => transaction.type === filter);
+  return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const transactions = await getTransactions();
+export async function getTransaction(userId: string, id: string) {
+  const transaction = mockTransactions.find((t) => t.id === id && t.userId === userId);
+  if (!transaction) throw new Error("Transaction not found");
+  return transaction;
+}
+
+export async function createTransaction(userId: string, input: TransactionInput) {
+  const newTransaction: Transaction = {
+    id: `trx-${Date.now()}`,
+    userId,
+    ...input,
+    createdAt: new Date().toISOString(),
+  };
+  mockTransactions.push(newTransaction);
+  return newTransaction;
+}
+
+export async function updateTransaction(userId: string, id: string, input: TransactionInput) {
+  const index = mockTransactions.findIndex((t) => t.id === id && t.userId === userId);
+  if (index === -1) throw new Error("Transaction not found");
+  
+  mockTransactions[index] = {
+    ...mockTransactions[index],
+    ...input,
+    updatedAt: new Date().toISOString(),
+  };
+  
+  return mockTransactions[index];
+}
+
+export async function deleteTransaction(userId: string, id: string) {
+  const index = mockTransactions.findIndex((t) => t.id === id && t.userId === userId);
+  if (index === -1) throw new Error("Transaction not found");
+  
+  mockTransactions.splice(index, 1);
+  return true;
+}
+
+export async function getDashboardSummary(userId: string = "user-001"): Promise<DashboardSummary> {
+  const transactions = await getTransactions(userId);
   const totalIncome = transactions
     .filter((transaction) => transaction.type === "income")
     .reduce((sum, transaction) => sum + transaction.amount, 0);
@@ -61,8 +101,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     balance: totalIncome - totalExpense,
     totalIncome,
     totalExpense,
-    recentTransactions: [...transactions].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    ),
+    recentTransactions: transactions.slice(0, 5),
   };
 }

@@ -1,29 +1,18 @@
 import { NextResponse } from "next/server";
+import { getDashboardSummary } from "@/services/transactions";
+import { getSession } from "@/services/auth";
 
 export async function GET() {
-  return NextResponse.json({
-    data: {
-      balance: 1550000,
-      totalIncome: 2300000,
-      totalExpense: 750000,
-      recentTransactions: [
-        {
-          id: "trx-004",
-          userId: "user-001",
-          type: "income",
-          amount: 300000,
-          description: "Uang tugas tambahan",
-          date: "2026-09-24",
-        },
-        {
-          id: "trx-003",
-          userId: "user-001",
-          type: "expense",
-          amount: 750000,
-          description: "Beli buku",
-          date: "2026-09-22",
-        },
-      ],
-    },
-  });
+  const session = await getSession();
+  if (!session.isAuthenticated || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
+  
+  try {
+    const summary = await getDashboardSummary(userId);
+    return NextResponse.json({ data: summary });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

@@ -43,7 +43,7 @@ export default function DashboardPage() {
       <section className="panel list-panel">
         <div className="section-head">
           <h2>Transaksi terbaru</h2>
-          <button className="ghost-button">+ Tambah transaksi</button>
+          <a href="/transactions" className="ghost-button">Manage Transactions</a>
         </div>
 
         <ul className="transaction-list">
