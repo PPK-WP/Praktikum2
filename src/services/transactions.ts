@@ -1,3 +1,4 @@
+import type { TransactionType as PrismaTransactionType } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import type { DashboardSummary } from "@/types/dashboard";
 import type { Transaction, TransactionInput, TransactionType } from "@/types/transaction";
@@ -6,11 +7,11 @@ export async function getTransactions(userId: string, filter?: TransactionType):
   const transactions = await prisma.transaction.findMany({
     where: {
       userId,
-      ...(filter ? { type: filter as any } : {}),
+      ...(filter ? { type: filter as PrismaTransactionType } : {}),
     },
     orderBy: [
-      { date: 'desc' },
-      { createdAt: 'desc' },
+      { date: "desc" },
+      { createdAt: "desc" },
     ],
   });
 
@@ -20,7 +21,7 @@ export async function getTransactions(userId: string, filter?: TransactionType):
     type: t.type as TransactionType,
     amount: Number(t.amount),
     description: t.description,
-    date: t.date.toISOString().split('T')[0],
+    date: t.date.toISOString().split("T")[0],
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt?.toISOString(),
   }));
@@ -28,7 +29,7 @@ export async function getTransactions(userId: string, filter?: TransactionType):
 
 export async function getTransaction(userId: string, id: string): Promise<Transaction> {
   const t = await prisma.transaction.findFirst({
-    where: { id, userId }
+    where: { id, userId },
   });
 
   if (!t) throw new Error("Transaction not found");
@@ -39,7 +40,7 @@ export async function getTransaction(userId: string, id: string): Promise<Transa
     type: t.type as TransactionType,
     amount: Number(t.amount),
     description: t.description,
-    date: t.date.toISOString().split('T')[0],
+    date: t.date.toISOString().split("T")[0],
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt?.toISOString(),
   };
@@ -49,11 +50,11 @@ export async function createTransaction(userId: string, input: TransactionInput)
   const t = await prisma.transaction.create({
     data: {
       userId,
-      type: input.type as any,
+      type: input.type as PrismaTransactionType,
       amount: input.amount,
       description: input.description,
       date: new Date(input.date),
-    }
+    },
   });
 
   return {
@@ -62,7 +63,7 @@ export async function createTransaction(userId: string, input: TransactionInput)
     type: t.type as TransactionType,
     amount: Number(t.amount),
     description: t.description,
-    date: t.date.toISOString().split('T')[0],
+    date: t.date.toISOString().split("T")[0],
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt?.toISOString(),
   };
@@ -70,18 +71,18 @@ export async function createTransaction(userId: string, input: TransactionInput)
 
 export async function updateTransaction(userId: string, id: string, input: TransactionInput): Promise<Transaction> {
   const existing = await prisma.transaction.findFirst({
-    where: { id, userId }
+    where: { id, userId },
   });
   if (!existing) throw new Error("Transaction not found");
 
   const t = await prisma.transaction.update({
     where: { id },
     data: {
-      type: input.type as any,
+      type: input.type as PrismaTransactionType,
       amount: input.amount,
       description: input.description,
       date: new Date(input.date),
-    }
+    },
   });
 
   return {
@@ -90,7 +91,7 @@ export async function updateTransaction(userId: string, id: string, input: Trans
     type: t.type as TransactionType,
     amount: Number(t.amount),
     description: t.description,
-    date: t.date.toISOString().split('T')[0],
+    date: t.date.toISOString().split("T")[0],
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt?.toISOString(),
   };
@@ -98,14 +99,14 @@ export async function updateTransaction(userId: string, id: string, input: Trans
 
 export async function deleteTransaction(userId: string, id: string): Promise<boolean> {
   const existing = await prisma.transaction.findFirst({
-    where: { id, userId }
+    where: { id, userId },
   });
   if (!existing) throw new Error("Transaction not found");
 
   await prisma.transaction.delete({
-    where: { id }
+    where: { id },
   });
-  
+
   return true;
 }
 

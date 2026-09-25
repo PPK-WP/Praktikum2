@@ -16,21 +16,6 @@ export default function Home() {
           <Link href="/register" className="secondary-button">Daftar</Link>
         </div>
       </section>
-
-      <section className="feature-grid">
-        <article className="panel feature-card">
-          <h2>Auth & Session</h2>
-          <p>Registrasi, login, logout, dan proteksi route untuk user yang memiliki session aktif.</p>
-        </article>
-        <article className="panel feature-card">
-          <h2>Transaction</h2>
-          <p>CRUD transaksi personal dengan filter income dan expense untuk mengelola arus keuangan.</p>
-        </article>
-        <article className="panel feature-card">
-          <h2>Dashboard</h2>
-          <p>Saldo, total pemasukan, total pengeluaran, dan transaksi terbaru per pengguna login.</p>
-        </article>
-      </section>
     </main>
   );
 }

@@ -3,27 +3,30 @@ import { getTransaction, updateTransaction, deleteTransaction } from "@/services
 import { validateTransactionInput } from "@/lib/transaction/validation";
 import { getSession } from "@/services/auth";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session.isAuthenticated || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+  const { id } = await params;
   
   try {
-    const transaction = await getTransaction(userId, params.id);
+    const transaction = await getTransaction(userId, id);
     return NextResponse.json({ data: transaction });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 404 });
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session.isAuthenticated || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+  const { id } = await params;
   
   try {
     const body = await request.json();
@@ -32,27 +35,30 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Validation failed", details: validation.errors }, { status: 400 });
     }
     
-    const updatedTransaction = await updateTransaction(userId, params.id, body);
+    const updatedTransaction = await updateTransaction(userId, id, body);
     return NextResponse.json({ data: updatedTransaction });
-  } catch (error: any) {
-    if (error.message === "Transaction not found") {
-      return NextResponse.json({ error: error.message }, { status: 404 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    if (message === "Transaction not found") {
+      return NextResponse.json({ error: message }, { status: 404 });
     }
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session.isAuthenticated || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+  const { id } = await params;
   
   try {
-    await deleteTransaction(userId, params.id);
+    await deleteTransaction(userId, id);
     return NextResponse.json({ message: "Transaction deleted successfully" });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 404 });
   }
 }
