@@ -1,69 +1,36 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="landing-shell">
+      <section className="hero panel">
+        <p className="eyebrow">Expense Tracker</p>
+        <h1>Kelola uangmu dengan lebih rapi dan lebih aman.</h1>
+        <p className="lead">
+          Aplikasi ini menjadi fondasi untuk mencatat pemasukan, pengeluaran, saldo, serta
+          riwayat transaksi mahasiswa dalam satu dashboard yang personal.
+        </p>
+
+        <div className="hero-actions">
+          <Link href="/login" className="primary-button">Masuk</Link>
+          <Link href="/register" className="secondary-button">Daftar</Link>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="feature-grid">
+        <article className="panel feature-card">
+          <h2>Auth & Session</h2>
+          <p>Registrasi, login, logout, dan proteksi route untuk user yang memiliki session aktif.</p>
+        </article>
+        <article className="panel feature-card">
+          <h2>Transaction</h2>
+          <p>CRUD transaksi personal dengan filter income dan expense untuk mengelola arus keuangan.</p>
+        </article>
+        <article className="panel feature-card">
+          <h2>Dashboard</h2>
+          <p>Saldo, total pemasukan, total pengeluaran, dan transaksi terbaru per pengguna login.</p>
+        </article>
+      </section>
+    </main>
   );
 }
