@@ -48,5 +48,5 @@ Error selalu berbentuk `{ message, errors? }` (`ApiError` di `src/types/shared.t
 - Password minimal 8 karakter, berisi huruf dan angka. Email disimpan huruf kecil dan harus unik.
 - Session berlaku 7 hari (cookie `et_session`, httpOnly).
 - Preferensi disimpan di cookie `et_preference`, dan juga di akun jika sedang login (dipulihkan saat login).
-- Data akun sementara disimpan di `data/auth.json` (tidak di-commit) sampai database dipilih.
+- Data akun disimpan di PostgreSQL, tabel `users` dan `user_preferences` (lihat [DATABASE_SETUP.md](DATABASE_SETUP.md)).
 - Production wajib mengisi `AUTH_SECRET` (lihat `.env.example`).
