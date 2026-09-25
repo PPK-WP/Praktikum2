@@ -1,47 +1,44 @@
 import { NextResponse } from "next/server";
+import { createTransaction, getTransactions } from "@/services/transactions";
+import { TransactionType } from "@/types/transaction";
+import { validateTransactionInput } from "@/lib/transaction/validation";
+import { getSession } from "@/services/auth";
 
-const transactions = [
-  {
-    id: "trx-001",
-    userId: "user-001",
-    type: "income",
-    amount: 2000000,
-    description: "Gaji part-time",
-    date: "2026-09-20",
-  },
-  {
-    id: "trx-002",
-    userId: "user-001",
-    type: "expense",
-    amount: 450000,
-    description: "Makan siang",
-    date: "2026-09-21",
-  },
-  {
-    id: "trx-003",
-    userId: "user-001",
-    type: "expense",
-    amount: 750000,
-    description: "Beli buku",
-    date: "2026-09-22",
-  },
-];
+export async function GET(request: Request) {
+  const session = await getSession();
+  if (!session.isAuthenticated || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
+  
+  const { searchParams } = new URL(request.url);
+  const type = searchParams.get("type") as TransactionType | null;
 
-export async function GET() {
-  return NextResponse.json({ data: transactions });
+  try {
+    const transactions = await getTransactions(userId, type || undefined);
+    return NextResponse.json({ data: transactions });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-
-  return NextResponse.json(
-    {
-      data: {
-        ...body,
-        id: `trx-${Date.now()}`,
-        userId: "user-001",
-      },
-    },
-    { status: 201 },
-  );
+  const session = await getSession();
+  if (!session.isAuthenticated || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
+  
+  try {
+    const body = await request.json();
+    const validation = validateTransactionInput(body);
+    if (!validation.valid) {
+      return NextResponse.json({ error: "Validation failed", details: validation.errors }, { status: 400 });
+    }
+    
+    const newTransaction = await createTransaction(userId, body);
+    return NextResponse.json({ data: newTransaction }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 }
