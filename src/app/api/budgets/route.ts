@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { jsonError, readJson } from "@/lib/auth/http";
 import { getCurrentUser } from "@/lib/auth/session";
-import { createBudget, getBudget, isValidMonth } from "@/services/budget";
+import { createBudget, getBudgetSummary, isValidMonth } from "@/services/budget";
 
-/** GET /api/budgets?month=YYYY-MM -> { data: Budget | null } */
+/** GET /api/budgets?month=YYYY-MM -> { data: BudgetSummary } */
 export async function GET(request: Request) {
   // Session first: no user, no data (SRS-203).
   const user = await getCurrentUser();
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   }
 
   // userId comes from the session, never from the request (SRS-204).
-  return NextResponse.json({ data: await getBudget(user.id, month) });
+  return NextResponse.json({ data: await getBudgetSummary(user.id, month) });
 }
 
 /** POST /api/budgets { month, amount } -> 201 created, or 200 if that month's budget was replaced */

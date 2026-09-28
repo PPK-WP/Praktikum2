@@ -1,7 +1,7 @@
 import { Prisma, type Budget as BudgetRow } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
-import type { Budget, BudgetInput } from "@/types/budget";
+import type { Budget, BudgetInput, BudgetSummary } from "@/types/budget";
 
 // "YYYY-MM" with a real month (01-12).
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -69,6 +69,32 @@ export async function getBudget(userId: string, month: string): Promise<Budget |
     where: { userId_month: { userId, month } }, // unique pair (user_id, month)
   });
   return row ? toBudget(row) : null;
+}
+
+/** Total of the user's expense transactions dated inside the "YYYY-MM" month. */
+export async function getMonthlyExpense(userId: string, month: string): Promise<number> {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const { _sum } = await prisma.transaction.aggregate({
+    _sum: { amount: true },
+    where: {
+      userId, // only this user's transactions (SRS-204)
+      type: "expense",
+      // [first day of month, first day of next month); Date.UTC rolls month 12 over to January.
+      date: { gte: new Date(Date.UTC(year, monthIndex - 1, 1)), lt: new Date(Date.UTC(year, monthIndex, 1)) },
+    },
+  });
+  return Number(_sum.amount ?? 0); // SUM over zero rows is null
+}
+
+/** Budget, total expense and remaining amount for one month. */
+export async function getBudgetSummary(userId: string, month: string): Promise<BudgetSummary> {
+  const [budget, totalExpense] = await Promise.all([getBudget(userId, month), getMonthlyExpense(userId, month)]);
+  return {
+    month,
+    budget,
+    totalExpense,
+    remaining: budget ? budget.amount - totalExpense : null,
+  };
 }
 
 /**
