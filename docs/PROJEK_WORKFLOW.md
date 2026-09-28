@@ -107,6 +107,7 @@ Sistem ini bertujuan untuk:
 
 ## 8. Requirement Traceability
 
+
 | Requirement | Module | Sub-module | Task | Owner |
 | --- | --- | --- | --- | --- |
 | FR-001 | Authentication | Register | Register form + validation | P1 |

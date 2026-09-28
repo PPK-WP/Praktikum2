@@ -2,9 +2,6 @@
 
 Aplikasi pencatat pemasukan dan pengeluaran untuk mahasiswa. Dibangun dengan Next.js 16 dan Prisma ORM (PostgreSQL).
 
-## 📸 Cuplikan Layar UI Baru
-
-![Dashboard Mockup](/dashboard_mockup_new_1790317530392.jpg)
 
 ## Menjalankan
 
