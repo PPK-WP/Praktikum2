@@ -2,9 +2,10 @@
 
 import { useMemo } from "react";
 
-interface MonthSelectorProps {
+export interface MonthSelectorProps {
   value: string;
   onChangeMonth: (month: string) => void;
+  onChange?: (month: string) => void;
 }
 
 function formatMonthLabel(month: string): string {
@@ -22,7 +23,8 @@ function buildMonthOptions(): Array<{ label: string; value: string }> {
   const options: Array<{ label: string; value: string }> = [];
   const current = new Date();
 
-  for (let offset = 5; offset >= 0; offset -= 1) {
+  // Range dari 12 bulan lalu hingga 6 bulan ke depan
+  for (let offset = 12; offset >= -6; offset -= 1) {
     const date = new Date(current.getFullYear(), current.getMonth() - offset, 1);
     const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     options.push({ label: formatMonthLabel(value), value });
@@ -31,30 +33,40 @@ function buildMonthOptions(): Array<{ label: string; value: string }> {
   return options;
 }
 
-export function MonthSelector({ value, onChangeMonth }: MonthSelectorProps) {
+export function MonthSelector({ value, onChangeMonth, onChange }: MonthSelectorProps) {
   const monthOptions = useMemo(() => buildMonthOptions(), []);
-  const currentValue = monthOptions.some((option) => option.value === value)
-    ? value
-    : monthOptions[0]?.value ?? new Date().toISOString().slice(0, 7);
+
+  const handleChange = (newMonth: string) => {
+    onChangeMonth?.(newMonth);
+    onChange?.(newMonth);
+  };
+
+  const isValueInOptions = monthOptions.some((option) => option.value === value);
 
   return (
-    <label style={{ display: "grid", gap: "8px", width: "100%" }}>
-      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--muted)" }}>
-        Pilih bulan anggaran
-      </span>
+    <div className="month-selector" style={{ display: "grid", gap: "8px", width: "100%" }}>
+      <label htmlFor="month-select" style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--muted)" }}>
+        Pilih Bulan Anggaran
+      </label>
       <select
-        value={currentValue}
-        onChange={(event) => onChangeMonth(event.target.value)}
-        className="input-field"
+        id="month-select"
+        value={value}
+        onChange={(event) => handleChange(event.target.value)}
+        className="input-field month-select-input"
         aria-label="Pilih bulan anggaran"
         style={{ width: "100%" }}
       >
+        {!isValueInOptions && value ? (
+          <option key={value} value={value}>
+            {formatMonthLabel(value)}
+          </option>
+        ) : null}
         {monthOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }
