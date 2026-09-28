@@ -32,6 +32,7 @@ model User {
 
   transactions Transaction[]
   preference   UserPreference?
+  budgets      Budget[]
 
   @@map("users")
 }
@@ -62,4 +63,19 @@ model UserPreference {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
+}
+
+// Monthly spending limit (SRS-201). One budget per user per month.
+model Budget {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  month     String   @db.VarChar(7) // "YYYY-MM"
+  amount    Decimal  @db.Decimal(14, 2)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@map("budgets")
 }
