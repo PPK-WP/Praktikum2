@@ -29,6 +29,8 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-expense_tracker}
       AUTH_SECRET: ${AUTH_SECRET:?Isi AUTH_SECRET di file .env (lihat .env.example)}
+      # Creates the demo account test@example.com / password123 (see README). Set to false outside local testing.
+      SEED_DEMO_ACCOUNT: ${SEED_DEMO_ACCOUNT:-true}
     ports:
       - "${APP_PORT:-3000}:3000"
 

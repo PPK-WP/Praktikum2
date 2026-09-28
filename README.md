@@ -59,6 +59,7 @@ Untuk menguji fitur autentikasi dan fungsionalitas utama aplikasi:
 | --- | --- |
 | `npm run dev` | Server development |
 | `npm run db:migrate` | Membuat / memperbarui schema database dengan Prisma |
+| `npm run db:deploy` | Menerapkan migrasi tanpa prompt (dipakai Docker); database lama dari versi `pg` otomatis dipindah ke tabel Prisma beserta datanya |
 | `npx prisma db seed` | Menjalankan file *seed* untuk memuat data dummy testing |
 | `npm run build` lalu `npm start` | Server production |
 | `npm run lint` | Cek kode |
